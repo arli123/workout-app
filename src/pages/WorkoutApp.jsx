@@ -526,6 +526,7 @@ export default function WorkoutApp({ session, profile, onNavigateAdmin, onLogout
   const [allWorkouts, setAllWorkouts] = useState({}) // weekKey -> dayIndex -> data
   const [editMode, setEditMode] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState(null)
   const [view, setView] = useState('week') // 'week' | 'day' | 'calendar'
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [saveTimer, setSaveTimer] = useState(null)
@@ -602,6 +603,7 @@ export default function WorkoutApp({ session, profile, onNavigateAdmin, onLogout
 
   async function saveDay(data) {
     setSaving(true)
+    setSaveError(null)
     const { error } = await supabase
       .from('workouts')
       .upsert({
@@ -611,7 +613,10 @@ export default function WorkoutApp({ session, profile, onNavigateAdmin, onLogout
         data: data,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id,week_key,day_index' })
-    if (error) console.error('Save error:', error)
+    if (error) {
+      console.error('Save error:', error)
+      setSaveError(error.message)
+    }
     setSaving(false)
   }
 
@@ -860,6 +865,11 @@ export default function WorkoutApp({ session, profile, onNavigateAdmin, onLogout
           {saving && (
             <div style={{ display: 'flex', alignItems: 'center', color: C.text2, fontSize: 17, padding: '0 8px' }}>
               שומר...
+            </div>
+          )}
+          {saveError && (
+            <div style={{ color: '#f87171', fontSize: 12, padding: '0 8px', maxWidth: 200 }}>
+              שגיאה: {saveError}
             </div>
           )}
         </div>
