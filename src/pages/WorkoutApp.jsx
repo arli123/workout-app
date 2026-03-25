@@ -24,7 +24,10 @@ function getWeekKey(date) {
   const day = d.getDay()
   const sunday = new Date(d)
   sunday.setDate(d.getDate() - day)
-  return sunday.toISOString().slice(0, 10)
+  const y = sunday.getFullYear()
+  const m = String(sunday.getMonth() + 1).padStart(2, '0')
+  const dd = String(sunday.getDate()).padStart(2, '0')
+  return `${y}-${m}-${dd}`
 }
 
 function getWeekDates(weekKey) {
@@ -556,6 +559,7 @@ export default function WorkoutApp({ session, profile, onNavigateAdmin, onLogout
       .select('*')
       .eq('user_id', session.user.id)
       .in('week_key', keys)
+      .order('updated_at', { ascending: true })
     if (error) { console.error(error); return }
     const map = {}
     for (const row of data || []) {
@@ -614,7 +618,6 @@ export default function WorkoutApp({ session, profile, onNavigateAdmin, onLogout
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id,week_key,day_index' })
     if (error) {
-      console.error('Save error:', error)
       setSaveError(error.message)
     }
     setSaving(false)
