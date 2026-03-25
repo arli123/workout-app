@@ -232,6 +232,13 @@ export default function Admin({ profile, onBack, onLogout }) {
     setActionLoading(p => ({ ...p, [user.id + '_approve']: false }))
   }
 
+  async function sendPasswordReset(user) {
+    setActionLoading(p => ({ ...p, [user.id + '_reset']: true }))
+    await supabase.auth.resetPasswordForEmail(user.email)
+    setActionLoading(p => ({ ...p, [user.id + '_reset']: false }))
+    alert(`נשלח מייל איפוס סיסמה ל-${user.email}`)
+  }
+
   async function toggleAdmin(user) {
     // Don't allow revoking own admin
     if (user.id === profile.id) return
@@ -297,6 +304,7 @@ export default function Admin({ profile, onBack, onLogout }) {
                     currentUser={profile}
                     onApprove={() => toggleApproval(user)}
                     onToggleAdmin={() => toggleAdmin(user)}
+                    onResetPassword={() => sendPasswordReset(user)}
                     actionLoading={actionLoading}
                   />
                 ))}
@@ -316,6 +324,7 @@ export default function Admin({ profile, onBack, onLogout }) {
                     currentUser={profile}
                     onApprove={() => toggleApproval(user)}
                     onToggleAdmin={() => toggleAdmin(user)}
+                    onResetPassword={() => sendPasswordReset(user)}
                     actionLoading={actionLoading}
                   />
                 ))}
@@ -332,7 +341,7 @@ export default function Admin({ profile, onBack, onLogout }) {
   )
 }
 
-function UserRow({ user, currentUser, onApprove, onToggleAdmin, actionLoading }) {
+function UserRow({ user, currentUser, onApprove, onToggleAdmin, onResetPassword, actionLoading }) {
   const isCurrentUser = user.id === currentUser.id
   const approvingKey = user.id + '_approve'
   const adminKey = user.id + '_admin'
@@ -373,6 +382,15 @@ function UserRow({ user, currentUser, onApprove, onToggleAdmin, actionLoading })
         >
           {actionLoading[approvingKey] ? '...' : user.is_approved ? 'בטל אישור' : 'אשר'}
         </button>
+        {!isCurrentUser && (
+          <button
+            style={{ background: 'rgba(251,191,36,0.12)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 8, padding: '7px 12px', fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+            onClick={onResetPassword}
+            disabled={actionLoading[user.id + '_reset']}
+          >
+            {actionLoading[user.id + '_reset'] ? '...' : '🔑 איפוס סיסמה'}
+          </button>
+        )}
       </div>
     </div>
   )

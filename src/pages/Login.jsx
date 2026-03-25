@@ -148,6 +148,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [inviteToken, setInviteToken] = useState(null)
   const [inviteValid, setInviteValid] = useState(null) // null=checking, true, false
 
@@ -260,15 +261,24 @@ export default function Login() {
           </div>
           <div style={S.field}>
             <label style={S.label}>סיסמה</label>
-            <input
-              style={S.input}
-              type="password"
-              placeholder={mode === 'register' ? 'מינימום 6 תווים' : '••••••••'}
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              dir="ltr"
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                style={{ ...S.input, paddingLeft: 44 }}
+                type={showPassword ? 'text' : 'password'}
+                placeholder={mode === 'register' ? 'מינימום 6 תווים' : '••••••••'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                dir="ltr"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(p => !p)}
+                style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#a0a0c0', padding: 0 }}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
           </div>
 
           <button
