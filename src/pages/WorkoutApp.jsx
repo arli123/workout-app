@@ -1188,13 +1188,13 @@ export default function WorkoutApp({ session, profile, onNavigateAdmin, onLogout
             <div style={{ fontSize: 15, color: C.text2, marginBottom: 20, wordBreak: 'break-all', direction: 'ltr', textAlign: 'left' }}>{shareModal.url}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button
-                onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent('הצטרף ליומן האימונים שלי 💪\n' + shareModal.url)}`, '_blank'); setShareModal(null) }}
+                onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent(shareModal.url)}`, '_blank'); setShareModal(null) }}
                 style={{ padding: '14px', borderRadius: 12, background: '#25D366', color: '#fff', border: 'none', fontSize: 18, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
               >
                 <span>📱</span> שלח ב-WhatsApp
               </button>
               <button
-                onClick={() => { window.open(`sms:?body=${encodeURIComponent('הצטרף ליומן האימונים שלי 💪\n' + shareModal.url)}`, '_blank'); setShareModal(null) }}
+                onClick={() => { window.open(`sms:?body=${encodeURIComponent(shareModal.url)}`, '_blank'); setShareModal(null) }}
                 style={{ padding: '14px', borderRadius: 12, background: 'rgba(124,131,253,0.2)', color: C.accent, border: `1px solid ${C.accent}`, fontSize: 18, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
               >
                 <span>💬</span> שלח ב-SMS
