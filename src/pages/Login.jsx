@@ -290,6 +290,20 @@ export default function Login() {
           </button>
         </form>
 
+        {mode === 'login' && (
+          <button
+            type="button"
+            onClick={async () => {
+              if (!email) { alert('הכנס את האימייל שלך קודם'); return }
+              await supabase.auth.resetPasswordForEmail(email)
+              alert(`נשלח מייל לאיפוס סיסמה ל-${email}`)
+            }}
+            style={{ background: 'none', border: 'none', color: '#7c83fd', fontSize: '13px', cursor: 'pointer', marginTop: '10px', width: '100%', textAlign: 'center' }}
+          >
+            שכחתי סיסמה
+          </button>
+        )}
+
         {mode === 'register' && !inviteToken && (
           <p style={S.registerNote}>
             הרשמה אפשרית רק עם קישור הזמנה מהמנהל
