@@ -1131,6 +1131,21 @@ export default function WorkoutApp({ session, profile, onNavigateAdmin, onLogout
           <DrawerItem icon="🗓️" label="לוח שנה" onClick={() => { setView('calendar'); setDrawerOpen(false) }} />
           <DrawerItem icon="📍" label="עבור להיום" onClick={() => { goToToday(); setDrawerOpen(false) }} />
 
+          <DrawerItem
+            icon="📨"
+            label="שתף לחבר"
+            onClick={() => {
+              const url = window.location.origin
+              if (navigator.share) {
+                navigator.share({ title: 'יומן אימונים', text: 'הצטרף ליומן האימונים שלי', url })
+              } else {
+                navigator.clipboard.writeText(url)
+                alert('הקישור הועתק!')
+              }
+              setDrawerOpen(false)
+            }}
+          />
+
           {profile?.is_admin && (
             <DrawerItem
               icon="⚙️"
