@@ -832,7 +832,13 @@ export default function WorkoutApp({ session, profile, onNavigateAdmin, onLogout
         {/* Edit/Save bar */}
         <div style={{ display: 'flex', gap: 8 }}>
           <button
-            onClick={() => setEditMode(e => !e)}
+            onClick={() => {
+              if (editMode) {
+                if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+                saveDay(allWorkouts?.[weekKey]?.[dayIndex] || emptyDay())
+              }
+              setEditMode(e => !e)
+            }}
             style={{
               flex: 1,
               padding: '10px',
