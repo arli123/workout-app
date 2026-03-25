@@ -530,6 +530,7 @@ export default function WorkoutApp({ session, profile, onNavigateAdmin, onLogout
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [saveTimer, setSaveTimer] = useState(null)
   const saveTimerRef = useRef(null)
+  const [shareModal, setShareModal] = useState(null) // { url } or null
 
   const weekDates = getWeekDates(weekKey)
 
@@ -1134,15 +1135,12 @@ export default function WorkoutApp({ session, profile, onNavigateAdmin, onLogout
           <DrawerItem
             icon="📨"
             label="שתף לחבר"
-            onClick={() => {
-              const url = window.location.origin
-              if (navigator.share) {
-                navigator.share({ title: 'יומן אימונים', text: 'הצטרף ליומן האימונים שלי', url })
-              } else {
-                navigator.clipboard.writeText(url)
-                alert('הקישור הועתק!')
-              }
+            onClick={async () => {
               setDrawerOpen(false)
+              const token = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)
+              await supabase.from('invites').insert({ token, created_by: session.user.id })
+              const url = `${window.location.origin}?invite=${token}`
+              setShareModal({ url })
             }}
           />
 
@@ -1178,6 +1176,39 @@ export default function WorkoutApp({ session, profile, onNavigateAdmin, onLogout
           </button>
         </div>
       </div>
+
+      {/* Share Modal */}
+      {shareModal && (
+        <div
+          onClick={() => setShareModal(null)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 300, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{ background: '#1a1a2e', borderRadius: '20px 20px 0 0', padding: '24px 20px 36px', width: '100%', maxWidth: 480 }}>
+            <div style={{ fontSize: 19, fontWeight: 700, color: C.text, marginBottom: 6 }}>שלח הזמנה לחבר</div>
+            <div style={{ fontSize: 15, color: C.text2, marginBottom: 20, wordBreak: 'break-all', direction: 'ltr', textAlign: 'left' }}>{shareModal.url}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button
+                onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent('הצטרף ליומן האימונים שלי 💪\n' + shareModal.url)}`, '_blank'); setShareModal(null) }}
+                style={{ padding: '14px', borderRadius: 12, background: '#25D366', color: '#fff', border: 'none', fontSize: 18, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+              >
+                <span>📱</span> שלח ב-WhatsApp
+              </button>
+              <button
+                onClick={() => { window.open(`sms:?body=${encodeURIComponent('הצטרף ליומן האימונים שלי 💪\n' + shareModal.url)}`, '_blank'); setShareModal(null) }}
+                style={{ padding: '14px', borderRadius: 12, background: 'rgba(124,131,253,0.2)', color: C.accent, border: `1px solid ${C.accent}`, fontSize: 18, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+              >
+                <span>💬</span> שלח ב-SMS
+              </button>
+              <button
+                onClick={() => { navigator.clipboard.writeText(shareModal.url); setShareModal(null); alert('הקישור הועתק!') }}
+                style={{ padding: '14px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', color: C.text2, border: `1px solid ${C.border}`, fontSize: 18, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+              >
+                <span>📋</span> העתק קישור
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

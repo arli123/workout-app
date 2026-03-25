@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 
 const S = {
@@ -122,19 +122,15 @@ const S = {
     marginBottom: '16px',
     textAlign: 'center',
   },
-  divider: {
+  inviteBadge: {
+    background: 'rgba(124,131,253,0.12)',
+    border: '1px solid rgba(124,131,253,0.3)',
+    color: '#7c83fd',
+    borderRadius: '10px',
+    padding: '10px 14px',
+    fontSize: '13px',
+    marginBottom: '20px',
     textAlign: 'center',
-    color: '#a0a0c0',
-    fontSize: '12px',
-    margin: '20px 0',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-  },
-  dividerLine: {
-    flex: 1,
-    height: '1px',
-    background: 'rgba(124,131,253,0.2)',
   },
   registerNote: {
     fontSize: '12px',
@@ -146,12 +142,33 @@ const S = {
 }
 
 export default function Login() {
-  const [mode, setMode] = useState('login') // 'login' | 'register'
+  const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [inviteToken, setInviteToken] = useState(null)
+  const [inviteValid, setInviteValid] = useState(null) // null=checking, true, false
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const token = params.get('invite')
+    if (token) {
+      setInviteToken(token)
+      setMode('register')
+      validateInvite(token)
+    }
+  }, [])
+
+  async function validateInvite(token) {
+    const { data } = await supabase.from('invites').select('token, used_by').eq('token', token).single()
+    if (data && !data.used_by) {
+      setInviteValid(true)
+    } else {
+      setInviteValid(false)
+    }
+  }
 
   async function handleLogin(e) {
     e.preventDefault()
@@ -171,6 +188,7 @@ export default function Login() {
     e.preventDefault()
     setError('')
     setSuccess('')
+    if (!inviteToken || !inviteValid) { setError('נדרש קישור הזמנה תקף להרשמה'); return }
     if (!email || !password) { setError('נא למלא אימייל וסיסמה'); return }
     if (password.length < 6) { setError('הסיסמה חייבת להכיל לפחות 6 תווים'); return }
     setLoading(true)
@@ -183,7 +201,6 @@ export default function Login() {
       return
     }
 
-    // Create profile with is_approved=false
     if (data?.user) {
       await supabase.from('profiles').upsert({
         id: data.user.id,
@@ -191,10 +208,11 @@ export default function Login() {
         is_approved: false,
         is_admin: false,
       })
+      await supabase.from('invites').update({ used_by: data.user.id }).eq('token', inviteToken)
     }
 
     setLoading(false)
-    setSuccess('החשבון נוצר! ממתין לאישור מנהל.')
+    setSuccess('החשבון נוצר! ממתין לאישור המנהל.')
     setMode('login')
   }
 
@@ -215,6 +233,14 @@ export default function Login() {
             הרשמה
           </button>
         </div>
+
+        {inviteToken && mode === 'register' && (
+          <div style={S.inviteBadge}>
+            {inviteValid === null ? '🔄 בודק קישור הזמנה...' :
+             inviteValid ? '✅ קישור הזמנה תקף' :
+             '❌ קישור הזמנה לא תקף או כבר נוצל'}
+          </div>
+        )}
 
         {error && <div style={S.error}>{error}</div>}
         {success && <div style={S.success}>{success}</div>}
@@ -254,10 +280,14 @@ export default function Login() {
           </button>
         </form>
 
-        {mode === 'register' && (
+        {mode === 'register' && !inviteToken && (
           <p style={S.registerNote}>
-            לאחר ההרשמה תצטרך לחכות לאישור המנהל<br />
-            לפני שתוכל להיכנס לאפליקציה
+            הרשמה אפשרית רק עם קישור הזמנה מהמנהל
+          </p>
+        )}
+        {mode === 'register' && inviteToken && inviteValid && (
+          <p style={S.registerNote}>
+            לאחר ההרשמה תצטרך לחכות לאישור המנהל
           </p>
         )}
       </div>
